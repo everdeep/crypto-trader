@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import pytest
 
 from service.trader import TraderService
-from enums import Signal, ExchangeType, OrderType, OrderStatus, OrderSide
+from cryptolib.enums import Signal, ExchangeType, OrderType, OrderStatus, OrderSide
 from test.mock_data import currency_pair_config, order_buy, order_sell
 
 

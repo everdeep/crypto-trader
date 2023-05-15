@@ -1,5 +1,5 @@
-from exchange import Binance
-from enums import ExchangeType
+from cryptolib.exchange import Binance
+from cryptolib.enums import ExchangeType
 
 
 class ExchangeService:

@@ -1,14 +1,16 @@
 import logging
 from datetime import datetime
-from model import OrderModel, CurrencyPairConfigModel
-from enums import Signal, OrderType, OrderStatus, OrderSide, ExchangeType
+from cryptolib.model import OrderModel, CurrencyPairConfigModel
+from cryptolib.enums import Signal, OrderType, OrderStatus, OrderSide, ExchangeType
 
 
 class TraderService:
     def __init__(self, exchange):
         self.exchange = exchange
 
-    def create_order(self, session, signal: Signal, config: CurrencyPairConfigModel) -> OrderModel:
+    def create_order(
+        self, session, signal: Signal, config: CurrencyPairConfigModel
+    ) -> OrderModel:
         """Put an order
 
         :param session: The database session
@@ -31,20 +33,28 @@ class TraderService:
         # Check if the user has enough funds to place the order
         if signal == Signal.BUY:
             cost = config.currency_free  # The cost is the amount of currency
-            amount = cost / float(last_price)  # The amount is the amount of asset gained
+            amount = cost / float(
+                last_price
+            )  # The amount is the amount of asset gained
             config.currency_free = 0
             config.currency_locked += cost  # The currency is now locked
         else:
             cost = config.asset_free  # The cost is the amount of asset
-            amount = cost * float(last_price)  # The amount is the amount of currency gained
+            amount = cost * float(
+                last_price
+            )  # The amount is the amount of currency gained
             config.asset_free = 0
             config.asset_locked += cost  # The currency is now locked
 
         if cost <= 0:
-            logging.info(f"Not enough funds to place {signal.name} order for symbol {config.currency_pair}")
+            logging.info(
+                f"Not enough funds to place {signal.name} order for symbol {config.currency_pair}"
+            )
             return
 
-        logging.info(f"Creating order for symbol {config.currency_pair} with side {signal.name}.")
+        logging.info(
+            f"Creating order for symbol {config.currency_pair} with side {signal.name}."
+        )
 
         order = OrderModel(
             user_id=config.user_id,
@@ -66,11 +76,15 @@ class TraderService:
         session.add(order)
         session.flush()
 
-        logging.info(f"Order created {config.currency_pair} with side {signal.name} - order_id: {order.order_id}")
+        logging.info(
+            f"Order created {config.currency_pair} with side {signal.name} - order_id: {order.order_id}"
+        )
 
         return order
 
-    def update_order(self, session, order: OrderModel, config: CurrencyPairConfigModel) -> OrderModel:
+    def update_order(
+        self, session, order: OrderModel, config: CurrencyPairConfigModel
+    ) -> OrderModel:
         """Update an order
 
         :param session: The database session
@@ -83,7 +97,9 @@ class TraderService:
 
         # TODO: Add implementation with Binance API and update the order in the database
 
-        logging.info(f"Updating order for symbol {order.currency_pair} with order_id {order.order_id}.")
+        logging.info(
+            f"Updating order for symbol {order.currency_pair} with order_id {order.order_id}."
+        )
 
         # Check if the user has enough funds to place the order
         if order.side == OrderSide.BUY:
@@ -101,6 +117,8 @@ class TraderService:
         order.updated_at = datetime.now()
         session.flush()
 
-        logging.info(f"Finished updating order for symbol {order.currency_pair} with order_id {order.order_id}.")
+        logging.info(
+            f"Finished updating order for symbol {order.currency_pair} with order_id {order.order_id}."
+        )
 
         return order

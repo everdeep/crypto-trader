@@ -1,8 +1,8 @@
 from monitor.tasks import do_scheduled_autotrade, do_buy_sell
 from unittest.mock import patch
 
-from enums import Signal
-from schema import CurrencyPairConfigSchema
+from cryptolib.enums import Signal
+from cryptolib.schema import CurrencyPairConfigSchema
 from test.mock_data import currency_pair_config
 
 
@@ -37,7 +37,10 @@ def test_do_scheduled_autotrade(do_buy_sell, b, c):
     do_buy_sell.assert_called_once_with(config)
 
 
-@patch("monitor.tasks.DataService.get_api_key", return_value={"api_key": "key", "api_secret": "secret"})
+@patch(
+    "monitor.tasks.DataService.get_api_key",
+    return_value={"api_key": "key", "api_secret": "secret"},
+)
 @patch("monitor.tasks.ExchangeService.get_exchange", return_value="exchange")
 @patch("monitor.tasks.SignalService.generate_signal", return_value=Signal.BUY)
 @patch("monitor.tasks.TraderService.create_order", return_value="order")

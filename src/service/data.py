@@ -1,4 +1,4 @@
-from model import (
+from cryptolib.model import (
     CurrencyPairConfigModel,
     SignalModel,
     OrderModel,
@@ -10,15 +10,12 @@ from model import (
     BalanceHistoryModel,
     CurrencyPairModel,
 )
-from schema import ApiKeySchema
-
-from utils import interval_to_seconds
-from enums import Interval, OrderStatus, Signal
+from cryptolib.schema import ApiKeySchema
+from cryptolib.utils import interval_to_seconds
+from cryptolib.enums import Interval, OrderStatus, Signal
 
 
 class DataService:
-    def test(self, session):
-        print("data service test")
 
     def get_interval_seconds(self, interval: Interval) -> int:
         """Get the interval in seconds
@@ -45,7 +42,11 @@ class DataService:
 
         :rtype: dict
         """
-        data: ApiKeyModel = session.query(ApiKeyModel).filter_by(user_id=user_id, exchange=exchange_type).first()
+        data: ApiKeyModel = (
+            session.query(ApiKeyModel)
+            .filter_by(user_id=user_id, exchange=exchange_type)
+            .first()
+        )
         return ApiKeySchema().dump(data)
 
     def get_user(self, session, user_id) -> list[UserModel]:
@@ -58,7 +59,7 @@ class DataService:
         :rtype: list
         """
         return session.query(UserModel).filter_by(id=user_id).first()
-    
+
     def get_users(self, session) -> list[UserModel]:
         """Get the users
 
@@ -69,7 +70,7 @@ class DataService:
         :rtype: list
         """
         return session.query(UserModel).order_by(UserModel.id).all()
-    
+
     def get_bots(self, session, user_id=None) -> list[CurrencyPairConfigModel]:
         """Get the currency pairs that are enabled for autotrade
 
@@ -82,14 +83,10 @@ class DataService:
 
         if user_id:
             return (
-                session.query(CurrencyPairConfigModel)
-                .filter_by(user_id=user_id)
-                .all()
+                session.query(CurrencyPairConfigModel).filter_by(user_id=user_id).all()
             )
-        
-        return (
-            session.query(CurrencyPairConfigModel).all()
-        )
+
+        return session.query(CurrencyPairConfigModel).all()
 
     def get_active_bots(self, session, user_id=None) -> list[CurrencyPairConfigModel]:
         """Get the currency pairs that are enabled for autotrade
@@ -107,12 +104,8 @@ class DataService:
                 .filter_by(user_id=user_id, is_active=True)
                 .all()
             )
-        
-        return (
-            session.query(CurrencyPairConfigModel)
-            .filter_by(is_active=True)
-            .all()
-        )
+
+        return session.query(CurrencyPairConfigModel).filter_by(is_active=True).all()
 
     def get_currency_pair(self, session, currency_pair) -> str:
         """Get the asset from the currency pair
@@ -124,7 +117,11 @@ class DataService:
 
         :rtype: str
         """
-        return session.query(CurrencyPairModel).filter_by(currency_pair=currency_pair).first()
+        return (
+            session.query(CurrencyPairModel)
+            .filter_by(currency_pair=currency_pair)
+            .first()
+        )
 
     def get_currency_pair_config(self, session, id) -> CurrencyPairConfigModel:
         """Get the user's autotrade config for a currency pair
@@ -148,8 +145,10 @@ class DataService:
         :rtype: dict
         """
         return session.query(PortfolioModel).filter_by(user_id=user_id).first()
-    
-    def get_portfolio_history(self, session, portfolio_id) -> list[PortfolioHistoryModel]:
+
+    def get_portfolio_history(
+        self, session, portfolio_id
+    ) -> list[PortfolioHistoryModel]:
         """Get the user's portfolio history
 
         :param session: The database session
@@ -159,7 +158,11 @@ class DataService:
 
         :rtype: dict
         """
-        return session.query(PortfolioHistoryModel).filter_by(portfolio_id=portfolio_id).all()
+        return (
+            session.query(PortfolioHistoryModel)
+            .filter_by(portfolio_id=portfolio_id)
+            .all()
+        )
 
     def get_portfolios(self, session) -> list[PortfolioModel]:
         """Get the user's portfolio
@@ -171,7 +174,7 @@ class DataService:
         :rtype: dict
         """
         return session.query(PortfolioModel).order_by(PortfolioModel.id).all()
-    
+
     def get_balance(self, session, portfolio_id, asset) -> BalanceModel:
         """Get the balance of an asset for a portfolio
 
@@ -183,7 +186,11 @@ class DataService:
 
         :rtype: dict
         """
-        return session.query(BalanceModel).filter_by(portfolio_id=portfolio_id, asset=asset).first()
+        return (
+            session.query(BalanceModel)
+            .filter_by(portfolio_id=portfolio_id, asset=asset)
+            .first()
+        )
 
     def get_balance_history(self, session, balance_id) -> list[BalanceHistoryModel]:
         """Get the balance history for a balance
@@ -211,17 +218,20 @@ class DataService:
 
         if not user_id and not bot_id:
             raise Exception("Either user_id or bot_id must be provided")
-        
 
         if user_id and bot_id:
-            return session.query(OrderModel).filter_by(user_id=user_id, bot_id=bot_id).all()
+            return (
+                session.query(OrderModel)
+                .filter_by(user_id=user_id, bot_id=bot_id)
+                .all()
+            )
 
         elif user_id:
             return session.query(OrderModel).filter_by(user_id=user_id).all()
-        
+
         elif bot_id:
             return session.query(OrderModel).filter_by(bot_id=bot_id).all()
-    
+
     def get_open_orders(self, session, user_id) -> list[OrderModel]:
         """Get the user's open orders
 
@@ -231,7 +241,11 @@ class DataService:
 
         :rtype: list
         """
-        return session.query(OrderModel).filter_by(user_id=user_id, status=OrderStatus.NEW.value).all()
+        return (
+            session.query(OrderModel)
+            .filter_by(user_id=user_id, status=OrderStatus.NEW.value)
+            .all()
+        )
 
     def update_signal(self, session, id: int, signal: str) -> SignalModel:
         """Update the autotrade signal for the currency pairs
@@ -265,7 +279,9 @@ class DataService:
         result.last_trade_time = last_trade_time
         return result
 
-    def update_balance(self, session, portfolio_id, asset, free, locked, exchange) -> BalanceModel:
+    def update_balance(
+        self, session, portfolio_id, asset, free, locked, exchange
+    ) -> BalanceModel:
         """Update the balance of an asset for a portfolio
 
         :param session: The database session
@@ -279,7 +295,11 @@ class DataService:
         :rtype: list
         """
 
-        result: BalanceModel = session.query(BalanceModel).filter_by(portfolio_id=portfolio_id, asset=asset).first()
+        result: BalanceModel = (
+            session.query(BalanceModel)
+            .filter_by(portfolio_id=portfolio_id, asset=asset)
+            .first()
+        )
         if result is None:
             result = BalanceModel()
             result.portfolio_id = portfolio_id

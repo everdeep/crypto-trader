@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 import numpy as np
-from enums import StrategyType, Signal
+from cryptolib.enums import StrategyType, Signal
 
 
 class SignalService:
@@ -44,7 +44,9 @@ class SignalService:
         try:
             data = self._exchange.get_symbol_data(currency_pair, interval, limit=1000)
         except Exception as e:
-            logging.error(f"Failed to fetch data for user {self._config.get('user_id')} and symbol {currency_pair} with error: {e}")
+            logging.error(
+                f"Failed to fetch data for user {self._config.get('user_id')} and symbol {currency_pair} with error: {e}"
+            )
             return
 
         self._data = pd.DataFrame(
@@ -154,7 +156,10 @@ class SignalService:
         close = self._data.get("close")
         high = self._data.get("high")
         low = self._data.get("low")
-        k = 100 * ((close - low.rolling(window).min()) / (high.rolling(window).max() - low.rolling(window).min()))
+        k = 100 * (
+            (close - low.rolling(window).min())
+            / (high.rolling(window).max() - low.rolling(window).min())
+        )
         d = k.rolling(3).mean()
         signals = pd.Series(0, index=self._data.index)
         signals[k > d] = Signal.BUY.value
@@ -166,7 +171,10 @@ class SignalService:
         close = self._data.get("close")
         high = self._data.get("high")
         low = self._data.get("low")
-        r = 100 * ((high.rolling(window).max() - close) / (high.rolling(window).max() - low.rolling(window).min()))
+        r = 100 * (
+            (high.rolling(window).max() - close)
+            / (high.rolling(window).max() - low.rolling(window).min())
+        )
         signal = pd.Series(0, index=self._data.index)
         signal[r < -80] = Signal.BUY.value
         signal[r > -20] = Signal.SELL.value
@@ -195,7 +203,7 @@ class SignalService:
         signal[adx < 20] = Signal.BUY.value
         signal[adx > 50] = Signal.SELL.value
         return Signal(signal.iloc[-1])
-    
+
     def commodity_channel_index(self, window=20) -> Signal:
         """Plots the commodity channel index for a cryptocurrency symbol"""
         close = self._data.get("close")
@@ -208,7 +216,9 @@ class SignalService:
         signal[cci > 100] = Signal.SELL.value
         return Signal(signal.iloc[-1])
 
-    def macd_rsi(self, short_window=12, long_window=26, signal_window=9, rsi_window=14) -> Signal:
+    def macd_rsi(
+        self, short_window=12, long_window=26, signal_window=9, rsi_window=14
+    ) -> Signal:
         close = self._data.get("close")
         short_ema = close.ewm(span=short_window, adjust=False).mean()
         long_ema = close.ewm(span=long_window, adjust=False).mean()

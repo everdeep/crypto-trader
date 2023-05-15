@@ -174,6 +174,17 @@ celery -A monitor worker -l INFO
 ```
 </details>
 
+
+#### Installing the crypto library module
+1. Navigate to the `src` directory.
+
+2. Clone the crypto library module
+```bash
+git clone https://github.com/everdeep/crypto-library.git cryptolib
+```
+
+3. You're done!
+
 ***
 
 ### Testing

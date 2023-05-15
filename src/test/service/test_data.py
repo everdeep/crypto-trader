@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 import pytest
 
-from enums import Signal
+from cryptolib.enums import Signal
 from service import DataService
 from test.mock_data import api_key, portfolio, order_buy, currency_pair_config, signal
 

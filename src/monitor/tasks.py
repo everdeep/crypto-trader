@@ -1,8 +1,9 @@
 import logging
+from datetime import datetime
 
 from .celery import app
 from config import app_config
-from model import (
+from cryptolib.model import (
     CurrencyPairConfigModel,
     UserModel,
     CurrencyPairModel,
@@ -11,21 +12,16 @@ from model import (
     PortfolioHistoryModel,
     BalanceHistoryModel,
 )
-from schema import CurrencyPairConfigSchema
+from cryptolib.schema import CurrencyPairConfigSchema
+from cryptolib.enums import Signal, ExchangeType
 from service import SignalService, DataService, ExchangeService, TraderService
-from datetime import datetime
-from enums import Signal, ExchangeType
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-ENGINE = create_engine(app_config.SQLALCHEMY_DATABASE_URI, echo=False, pool_size=20, max_overflow=0)
-
-
-@app.task
-def test(arg):
-    with Session(ENGINE) as session:
-        print(arg)
+ENGINE = create_engine(
+    app_config.SQLALCHEMY_DATABASE_URI, echo=False, pool_size=20, max_overflow=0
+)
 
 
 @app.task
@@ -42,7 +38,9 @@ def do_scheduled_autotrade():
 
             # Check if the last trade was made within the interval
             interval_seconds = DataService().get_interval_seconds(interval)
-            if (datetime.now() - signal.last_trade_time).total_seconds() < interval_seconds:
+            if (
+                datetime.now() - signal.last_trade_time
+            ).total_seconds() < interval_seconds:
                 logging.info("Not enough time has passed since last trade")
                 continue
 
@@ -112,14 +110,25 @@ def update_balance(user_id, portfolio_id, exchanges):
                 asset = balance.get("asset")
                 free = balance.get("free")
                 locked = balance.get("locked")
-                DataService().update_balance(session, portfolio_id, asset, free, locked, ExchangeType(exchange_type))
+                DataService().update_balance(
+                    session,
+                    portfolio_id,
+                    asset,
+                    free,
+                    locked,
+                    ExchangeType(exchange_type),
+                )
 
         # Iterate through active bots and update the balance
         bots: list[CurrencyPairConfigModel] = DataService().get_bots(session, user_id)
         for bot in bots:
-            pair: CurrencyPairModel = DataService().get_currency_pair(session, bot.currency_pair)
+            pair: CurrencyPairModel = DataService().get_currency_pair(
+                session, bot.currency_pair
+            )
             if not pair:
-                logging.warning(f"Currency pair {bot.currency_pair} does not exist. Skipping.")
+                logging.warning(
+                    f"Currency pair {bot.currency_pair} does not exist. Skipping."
+                )
                 continue
 
             asset = pair.symbol
@@ -128,7 +137,9 @@ def update_balance(user_id, portfolio_id, exchanges):
             # Free up locked balance if the bot has been decommissioned
             if bot.is_decommissioned:
                 asset_balance = DataService().get_balance(session, portfolio_id, asset)
-                currency_balance = DataService().get_balance(session, portfolio_id, currency)
+                currency_balance = DataService().get_balance(
+                    session, portfolio_id, currency
+                )
                 asset_balance.free += bot.asset_free + bot.asset_locked
                 asset_balance.locked -= bot.asset_free + bot.asset_locked
                 currency_balance.free += bot.currency_free + bot.currency_locked
@@ -143,13 +154,19 @@ def update_balance(user_id, portfolio_id, exchanges):
             if bot.is_simulated:
                 asset_balance = bot.asset_free + bot.asset_locked
                 currency_balance = bot.currency_free + bot.currency_locked
-                DataService().update_balance(session, portfolio_id, asset, 0, asset_balance, bot.exchange)
-                DataService().update_balance(session, portfolio_id, currency, 0, currency_balance, bot.exchange)
-        
+                DataService().update_balance(
+                    session, portfolio_id, asset, 0, asset_balance, bot.exchange
+                )
+                DataService().update_balance(
+                    session, portfolio_id, currency, 0, currency_balance, bot.exchange
+                )
+
         session.flush()
 
         # Update the balance history
-        for balance in session.query(BalanceModel).filter_by(portfolio_id=portfolio_id).all():
+        for balance in (
+            session.query(BalanceModel).filter_by(portfolio_id=portfolio_id).all()
+        ):
             balance_history = BalanceHistoryModel(
                 balance_id=balance.id,
                 asset=balance.asset,
@@ -181,10 +198,14 @@ def do_buy_sell(currency_pair_config: CurrencyPairConfigModel):
         # Generate the signal
         signal: Signal = SignalService(exchange, currency_pair_config).generate_signal()
         if signal is None:
-            logging.warning(f"Failed to generate signal for user_id {user_id} with strategy {config.strategy}")
+            logging.warning(
+                f"Failed to generate signal for user_id {user_id} with strategy {config.strategy}"
+            )
             return
 
-        logging.info(f"Generated signal {signal.name} for currency pair: {config.currency_pair}.")
+        logging.info(
+            f"Generated signal {signal.name} for currency pair: {config.currency_pair}."
+        )
 
         # Update the autotrade table with the signal
         update_signal.delay(currency_pair_config.get("signal").get("id"), signal.name)

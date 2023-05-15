@@ -1,5 +1,5 @@
 from datetime import datetime
-from model import (
+from cryptolib.model import (
     CurrencyPairConfigModel,
     SignalModel,
     OrderModel,
@@ -8,7 +8,15 @@ from model import (
     CurrencyPairModel,
     StrategyConfigModel,
 )
-from enums import Interval, ExchangeType, Signal, StrategyType, OrderStatus, OrderSide, OrderType
+from cryptolib.enums import (
+    Interval,
+    ExchangeType,
+    Signal,
+    StrategyType,
+    OrderStatus,
+    OrderSide,
+    OrderType,
+)
 
 api_key = {"api_key": "test", "api_secret": "test_secret", "exchange": "Binance"}
 

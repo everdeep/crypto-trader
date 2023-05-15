@@ -17,7 +17,9 @@ api_keys.load.sql
 *.testing.sql
 
 logs/
-
 data/
+
+# The common project library
+cryptolib/
 
 training.csv

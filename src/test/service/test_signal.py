@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
 from service import SignalService
-from enums import Signal, StrategyType
-from model import StrategyConfigModel
-from schema import CurrencyPairConfigSchema
+from cryptolib.enums import Signal, StrategyType
+from cryptolib.model import StrategyConfigModel
+from cryptolib.schema import CurrencyPairConfigSchema
 from test.mock_data import currency_pair_config
 
 import pytest
@@ -122,7 +122,7 @@ def test_generate_signal_moving_average_crossover(exchange, config):
             "strategy": StrategyType.MOVING_AVERAGE_CROSSOVER.value,
             "key": "long_window",
             "value": 20,
-        }
+        },
     ]
     signal_service = SignalService(exchange, config)
     signal = signal_service.generate_signal()

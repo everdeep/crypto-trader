@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from .celery import app
-from config import app_config
+from config import config as app_config
 from cryptolib.model import (
     CurrencyPairConfigModel,
     UserModel,
@@ -12,8 +12,9 @@ from cryptolib.model import (
     PortfolioHistoryModel,
     BalanceHistoryModel,
 )
+from cryptolib.model import OrderModel
 from cryptolib.schema import CurrencyPairConfigSchema
-from cryptolib.enums import Signal, ExchangeType
+from cryptolib.enums import Signal, ExchangeType, OrderStatus
 from service import SignalService, DataService, ExchangeService, TraderService
 
 from sqlalchemy import create_engine
@@ -56,6 +57,17 @@ def do_scheduled_update_balance():
 
         # For each exchange we need to retrieve the balance
         for user in users:
+            # only update the balance if the user has an active bot
+            # TODO: convert this into a boolean check
+            active_bots = False
+            for bot in user.currency_pair_configs:
+                if bot.is_active:
+                    active_bots = True
+                    break
+
+            if not active_bots:
+                continue
+
             portfolio_id = user.portfolio.id
             exchanges = {}
             for api in user.api_keys:
@@ -216,14 +228,14 @@ def do_buy_sell(currency_pair_config: CurrencyPairConfigModel):
 
         # Create the order
         trader = TraderService(exchange)
-        order = trader.create_order(session, signal, config)
+        order: OrderModel = trader.create_order(session, signal, config)
 
         # Invalid balance and so failed to create order
         if order is None:
             return
 
-        # For simulated currency pairs, we can update the order immediately
-        if config.is_simulated:
+        # If the order is filled, update the order and the balance
+        if order.status == OrderStatus.FILLED:
             trader.update_order(session, order, config)
 
         session.commit()

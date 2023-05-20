@@ -42,7 +42,7 @@ class SignalService:
         # Fetch the historical data
         data = []
         try:
-            data = self._exchange.get_symbol_data(currency_pair, interval, limit=1000)
+            data = self._exchange.get_klines(currency_pair, interval, limit=1000)
         except Exception as e:
             logging.error(
                 f"Failed to fetch data for user {self._config.get('user_id')} and symbol {currency_pair} with error: {e}"

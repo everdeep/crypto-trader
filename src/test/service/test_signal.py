@@ -12,7 +12,7 @@ import pytest
 def exchange():
     """Exchange fixture"""
     exchange = MagicMock()
-    exchange.get_symbol_data.return_value = [
+    exchange.get_klines.return_value = [
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     ]
     yield exchange

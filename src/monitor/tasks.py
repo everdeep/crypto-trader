@@ -24,7 +24,6 @@ ENGINE = create_engine(
     app_config.SQLALCHEMY_DATABASE_URI, echo=False, pool_size=20, max_overflow=0
 )
 
-
 @app.task
 def do_scheduled_autotrade():
     rows = []
@@ -206,7 +205,7 @@ def do_buy_sell(currency_pair_config: CurrencyPairConfigModel):
 
         # Fetch the exchange service
         exchange = ExchangeService().get_exchange(exchange_type, **api_key_pair)
-
+        
         # Generate the signal
         signal: Signal = SignalService(exchange, currency_pair_config).generate_signal()
         if signal is None:

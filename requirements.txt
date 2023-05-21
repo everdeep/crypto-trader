@@ -2,6 +2,7 @@ bcrypt==4.0.1
 binance-connector==2.0.0
 ccxt==2.9.13
 celery==5.2.7
+coinbasepro
 ipykernel==6.21.3
 ipython==8.11.0
 jupyterlab==3.6.1
@@ -10,9 +11,9 @@ marshmallow-enum==1.5.1
 marshmallow-sqlalchemy==0.29.0
 matplotlib==3.7.1
 mysql-connector-python==8.0.32
-mysqlclient==2.1.1
 numpy==1.24.2
 pandas==1.5.3
+PyMySQL==1.0.3
 pytest==7.2.2
 python-binance==1.0.17
 python-dateutil==2.8.2

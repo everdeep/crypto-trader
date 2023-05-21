@@ -8,6 +8,7 @@ class SignalService:
     def __init__(self, exchange, config):
         self._exchange = exchange
         self._config = config
+        self._data = []
 
     def _remove_repeated_signals(self, signals):
         """Removes repeated signals."""
@@ -40,35 +41,13 @@ class SignalService:
         )
 
         # Fetch the historical data
-        data = []
         try:
-            data = self._exchange.get_klines(currency_pair, interval, limit=1000)
+            self._data = self._exchange.get_historical_klines(currency_pair, interval)
         except Exception as e:
             logging.error(
                 f"Failed to fetch data for user {self._config.get('user_id')} and symbol {currency_pair} with error: {e}"
             )
             return
-
-        self._data = pd.DataFrame(
-            data,
-            columns=[
-                "time",
-                "open",
-                "high",
-                "low",
-                "close",
-                "volume",
-                "close_time",
-                "quote_asset_volume",
-                "number_of_trades",
-                "taker_buy_base_asset_volume",
-                "taker_buy_quote_asset_volume",
-                "ignore",
-            ],
-            dtype=np.float64,
-        )
-        self._data.set_index("time", inplace=True)
-        self._data.index = pd.to_datetime(self._data.index, unit="ms")
 
         if strategy == StrategyType.MACD.value:
             return self.macd(**params)

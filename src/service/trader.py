@@ -27,7 +27,12 @@ class TraderService:
         )
         
         # Get the last price
-        last_price = float(self.exchange.get_last_price(config.currency_pair))
+        last_price = self.exchange.get_last_price(config.currency_pair)
+        if last_price == 0.0:
+            logging.warning(
+                f"Failed to get last price for symbol {config.currency_pair}"
+            )
+            return
 
         order = None
         # Handles the balance check for the order

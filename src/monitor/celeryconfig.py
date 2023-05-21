@@ -40,3 +40,10 @@ def on_failure(self, exc, task_id, args, kwargs, einfo):
 
 
 task_failure = on_failure
+
+# call afer celery shutdown signal
+def on_worker_shutdown():
+    print("Worker shutdown")
+
+
+worker_shutdown = on_worker_shutdown

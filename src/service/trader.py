@@ -28,7 +28,7 @@ class TraderService:
         
         # Get the last price
         last_price = self.exchange.get_last_price(config.currency_pair)
-        if last_price == 0.0:
+        if last_price == 0.0 or type(last_price) is not float:
             logging.warning(
                 f"Failed to get last price for symbol {config.currency_pair}"
             )
@@ -51,7 +51,7 @@ class TraderService:
                 "cost": order_params["cost"],
                 "amount": order_params["cost"] / last_price
                 if signal == Signal.BUY
-                else (cost * last_price),
+                else (order_params["cost"] * last_price),
             }
         else:
             # Create the order
@@ -69,6 +69,7 @@ class TraderService:
             )
             return
 
+        # The actual cost and amount after fees
         cost, amount = (
             self.exchange.get_order_cost_and_amount(order)
             if not config.is_simulated

@@ -1,7 +1,6 @@
 bcrypt==4.0.1
 binance-connector==2.0.0
 ccxt==2.9.13
-cbpro==0.4.1
 celery==5.2.7
 coinbase==2.1.0
 ipykernel==6.21.3
